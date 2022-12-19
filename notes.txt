@@ -1,0 +1,19 @@
+this says expense ratio is 0.00%, and it's wrong
+https://ca.finance.yahoo.com/quote/VTSAX/profile/
+
+vanguard says expense ratio is 0.04%
+https://investor.vanguard.com/investment-products/mutual-funds/profile/vtsax
+
+adjusted closing price accounts for expense ratio, but can also calculate it myself
+ex-dividend day is reinvestment day
+use yfinance for data
+
+portfoliovisualizer email says: NAV and price per share of mutual funds and ETFs already reflects the expense ratio.
+
+https://quant.stackexchange.com/questions/47342/does-adjusted-closing-price-take-account-the-expense-ratio
+Instead, each fund's expenses are deducted from its total value on a regular basis. And those expenses cut directly into your investment returns.
+
+so stock price AND adjusted closing price both account for expense ratio
+but stock price and dividend and split calculation manually seems to be the tiniest bit more accurate
+
+market timing isn't correct for some reason with the expenses, but I'm not sure why... says 66% of the time it'll work when rich, broke, or dead says 98% of time.
