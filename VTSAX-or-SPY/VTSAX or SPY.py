@@ -202,7 +202,7 @@ def timeMarketYear(vary, startYear, endYear, deposit, isRoth, startStock):
                         varyDay = fundStock[yearKey][monthKey][vary][1]
                 # for low
                 if vary == 1:
-                    if fundStock[yearKey][monthKey][0][0] < varyStock:
+                    if fundStock[yearKey][monthKey][vary][0] < varyStock:
                         varyStock = fundStock[yearKey][monthKey][vary][0]
                         varyMonth = monthKey
                         varyDay = fundStock[yearKey][monthKey][vary][1]
