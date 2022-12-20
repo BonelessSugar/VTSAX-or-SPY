@@ -1,14 +1,32 @@
 import csv
-# 1.
-# asks user VTSAX or SPY
+
+# NOTE: monthly investment calculation seems to be bugged.
+# The values don't seem different enough btw high, start, end, low.
+
+'''
+OUTLINE:
+Ask user whether investment is VTSAX or SPY
+Create a dictionary of dividend dates and values for stock choice
+Create a dictionary of the highest, lowest , start, and end of month stock price
+Store Roth IRA limits in dictionary for each year
+Check that the input is a valid year
+Check that monthly deposit is positive and is only two digits after decimal
+Calculate price of total shares
+Ask inputs for start year, end year, and monthly deposit or roth contribution
+Ask user for initial investment
+Ask user for lump sum (annual) or DCA (monthly)
+Prints value at end of duration for:
+    (fixed investments) buy at lowest stock price of month/year, highest, start of period, end of period (DCA only)
+    (roth contribution) buy at start of period
+    0 = high, 1 = low, 2 = start, 3 = end
+'''
+
 fund = input("VTSAX or SPY: ")
 fund = fund.upper()
 while (fund != "VTSAX") and (fund != "SPY"):
     fund = input("Please enter either VTSAX or SPY: ")
     fund = fund.upper()
 
-# 2.
-# creates a dictionary of dividend dates and values
 fundDiv = {}
 with open(fund + ' dividend.csv', newline='') as csvfile:
     lineCount = 0
@@ -24,10 +42,10 @@ with open(fund + ' dividend.csv', newline='') as csvfile:
                 # turn it into a searchable list
                 # filterContent = [['12', '21', '2000'], '0.179']
                 filterContent = contents.split(",")
-                filterContent[0] = filterContent[0].split("/")
-                year = int(filterContent[0][2])
-                month = int(filterContent[0][0])
-                day = int(filterContent[0][1])
+                dates = filterContent[0].split("/")
+                year = int(dates[2])
+                month = int(dates[0])
+                day = int(dates[1])
                 price = float(filterContent[1])
                 # {divYear: {divMonth: [divDay, $perShare]}}
                 if year not in fundDiv:
@@ -36,10 +54,6 @@ with open(fund + ' dividend.csv', newline='') as csvfile:
                     fundDiv[year].update({month: [day, price]})
         lineCount += 1
 
-# 3.
-# dictionary of the highest stock price of the month,
-# lowest stock price of the month, stock price at start of month,
-# stock price at end of month, and stock price at dividend reinvestment date
 fundStock = {}
 with open(fund + ' stock.csv', newline='') as csvfile:
     lineCount = 0
@@ -48,16 +62,16 @@ with open(fund + ' stock.csv', newline='') as csvfile:
         if lineCount != 0:
             for contents in row:
                 filterContent = contents.split(",")
-                filterContent[0] = filterContent[0].split("/")
-                year = int(filterContent[0][2])
-                month = int(filterContent[0][0])
-                day = int(filterContent[0][1])
+                dates = filterContent[0].split("/")
+                year = int(dates[2])
+                month = int(dates[0])
+                day = int(dates[1])
                 price = float(filterContent[1])
                 if year not in fundStock:
                     fundStock.update({year: {month: [[price, day], [price, day], [price, day], [0, 0], [0, 0]]}})
                 if month not in fundStock[year]:
                     fundStock[year].update({month: [[price, day], [price, day], [price, day], [0, 0], [0, 0]]})
-                # {year: {month: [[high price, day], [low price, day], [start price, day], [end price, day], [div price, day]}}
+                # {year: {month: [[high, day], [low, day], [start, day], [end, day], [div, day]}}
                 # add high price
                 if price > fundStock[year][month][0][0]:
                     fundStock[year][month][0][0] = price
@@ -76,8 +90,6 @@ with open(fund + ' stock.csv', newline='') as csvfile:
                         fundStock[year][month][4][1] = day
         lineCount += 1
 
-# 4.
-# stores Roth IRA limit in dictionary for each year
 rothList = {}
 for i in range(1982, 2022):
     amount = 0
@@ -95,8 +107,7 @@ for i in range(1982, 2022):
         amount = 6000
     rothList.update({i: amount})
 
-# 5.
-# checks that the input is a valid year
+
 def yearField(startEnd):
     year = input(startEnd + " year: ")
     if startEnd == "Start":
@@ -112,8 +123,6 @@ def yearField(startEnd):
         year = input("Please input " + aN + startEnd.lower() + " year between " + str(startYear) + " and 2021: ")
     return int(year)
 
-# 6.
-# checks that monthly deposit is positive and is only two digits after decimal
 def isDollars(monthOrYear):
     if monthOrYear != 0:
         monthDe = input(monthOrYear.capitalize() + "ly Deposit: ")
@@ -142,8 +151,6 @@ def isDollars(monthOrYear):
         myLoop = False
     return float(monthDe)
 
-# 7.
-# calculates price of total shares
 def timeMarket(vary, startYear, endYear, deposit, isRoth, startStock):
     # running total of how many shares you own
     stockCount = startStock
@@ -178,7 +185,6 @@ def timeMarket(vary, startYear, endYear, deposit, isRoth, startStock):
     # return the value of your shares at Dec 31 2020 share value
     return stockCount * fundStock[endYear][12][3][0]
 
-# 7.5
 def timeMarketYear(vary, startYear, endYear, deposit, isRoth, startStock):
     # running total of how many shares you own
     stockCount = startStock
@@ -240,27 +246,20 @@ def timeMarketYear(vary, startYear, endYear, deposit, isRoth, startStock):
     # return the value of your shares at Dec 31 2020 share value
     return stockCount * fundStock[endYear][12][3][0]
 
-# 8
-# inputs for start year, end year, and monthly deposit or roth contribution
 strYr = yearField("Start")
 endYr = yearField("End")
 while endYr < strYr:
     print("End year cannot be before start year.")
     endYr = yearField("End")
 
-# 8.5
-# ask user for intiial investment
 startStock = isDollars(0) / fundStock[strYr][1][2][0]
 
-# 9
-# ask user for lump sum or monthly DCA
 monthOrYear = input("Would you like to invest annually or monthly? (year/month): ")
 monthOrYear = monthOrYear.lower()
 while (monthOrYear != "year") and (monthOrYear != "month"):
     monthOrYear = input("Please input year or month: ")
     monthOrYear = monthOrYear.lower()
 
-# 10
 contLoop = 0
 monDe = 0
 isRoth = False
@@ -275,14 +274,9 @@ while contLoop == 0:
         continue
     contLoop = 1
 
- # 11. prints value at end of duration for:
-    # 12. low, high, start of period, end of period (DCA only)
-# 11/12
-# buy at high/low/start of monthly stock price
-# 0 = high, 1 = low, 2 = start, 3 = end
 if monthOrYear == "year":
     if monDe == 0:
-        print('Value: ${:,.2f}'.format(timeMarketYear(0, strYr, endYr, monDe, isRoth, startStock)))
+        print('Value: ${:,.2f}'.format(timeMarketYear(2, strYr, endYr, monDe, isRoth, startStock)))
     else:
         # def timeMarketYear(vary, startYear, endYear, deposit, isRoth):
         print('High: ${:,.2f}'.format(timeMarketYear(0, strYr, endYr, monDe, isRoth, startStock)))
@@ -290,8 +284,9 @@ if monthOrYear == "year":
         print('Low: ${:,.2f}'.format(timeMarketYear(1, strYr, endYr, monDe, isRoth, startStock)))
 else:
     if monDe == 0:
-        print('Value: ${:,.2f}'.format(timeMarket(0, strYr, endYr, monDe, isRoth, startStock)))
+        print('Value: ${:,.2f}'.format(timeMarket(2, strYr, endYr, monDe, isRoth, startStock)))
     else:
+        # seems to be bugged, prices aren't different enough?
         # def timeMarket(vary, startYear, endYear, deposit, isRoth):
         print('High: ${:,.2f}'.format(timeMarket(0, strYr, endYr, monDe, isRoth, startStock)))
         print('Start: ${:,.2f}'.format(timeMarket(2, strYr, endYr, monDe, isRoth, startStock)))
